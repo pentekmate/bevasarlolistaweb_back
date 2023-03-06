@@ -84,6 +84,18 @@ app.post('/login', (req, res) => {
     })
     connection.end()
   })
+  app.get('/getkomment', (req, res) => {
+    kapcsolat()
+  
+    connection.query('SELECT felhasznalo.felhasznalo_nev,felhasznalo.felhasznalo_kep_id,web_komment.wm_szoveg,web_komment.wm_datum FROM `web_komment` inner JOIN felhasznalo on felhasznalo.felhasznalo_id=web_komment.wm_felhasznalo_id;', function (err, rows, fields) {
+      if (err)
+        console.log(err)
+      else {
+       res.send(rows)
+        }
+    })
+    connection.end()
+  })
 
 
 
