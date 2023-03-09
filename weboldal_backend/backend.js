@@ -6,190 +6,190 @@ const cors = require('cors')
 const bcrypt = require('bcryptjs');
 var connection
 function kapcsolat() {
-    connection = mysql.createConnection({
-        host: 'localhost',
-        user: 'root',
-        password: '',
-        database: 'bevasarlolista'
-    })
+  connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'bevasarlolista'
+  })
 }
 app.use(express.static('Kepek'))
 app.use(express.json())
 app.use(cors())
 
 app.post('/login', (req, res) => {
-    kapcsolat()
-  
-    connection.query('SELECT * FROM `felhasznalo` WHERE `felhasznalo_nev` ="' + req.body.bevitel1 + '" ;', function (err, rows, fields) {
-      if (err)
-        console.log(err)
+  kapcsolat()
+
+  connection.query('SELECT * FROM `felhasznalo` WHERE `felhasznalo_nev` ="' + req.body.bevitel1 + '" ;', function (err, rows, fields) {
+    if (err)
+      console.log(err)
+    else {
+      if (rows.length > 0) {
+        const JelszoVissza = bcrypt.compare(req.body.bevitel2, rows[0].felhasznalo_jelszo)
+          .then((talalt) => {
+            if (talalt) {
+              res.send(true)
+            }
+            else {
+              res.send(false)
+            }
+          })
+      }
       else {
-        if (rows.length > 0) {
-          const JelszoVissza = bcrypt.compare(req.body.bevitel2, rows[0].felhasznalo_jelszo)
-            .then((talalt) => {
-              if (talalt) {
-                res.send(true)
-              }
-              else {
-                res.send(false)
-              }
-            })
+        res.send(false)
+      }
+    }
+
+  })
+  connection.end()
+})
+app.post('/getid', (req, res) => {
+  kapcsolat()
+
+  connection.query('SELECT felhasznalo_id FROM `felhasznalo` WHERE `felhasznalo_nev` ="' + req.body.bevitel1 + '" ;', function (err, rows, fields) {
+    if (err)
+      console.log(err)
+    else {
+      let id = JSON.stringify(rows[0].felhasznalo_id)
+      console.log(id)
+      res.send(id)
+    }
+  })
+  connection.end()
+})
+
+app.post('/getprofilkep', (req, res) => {
+  kapcsolat()
+
+  connection.query('SELECT felhasznalo_kep_id FROM `felhasznalo` WHERE `felhasznalo_id` ="' + req.body.bevitel1 + '" ;', function (err, rows, fields) {
+    if (err)
+      console.log(err)
+    else {
+      let fhkepid = JSON.stringify(rows[0].felhasznalo_kep_id)
+      res.send(fhkepid)
+    }
+  })
+  connection.end()
+})
+app.get('/getkomment', (req, res) => {
+  kapcsolat()
+
+  connection.query('SELECT wm_nemertett_egyett,wm_jelentett,wm_egyetertett,id,Felhasznalo.felhasznalo_id,felhasznalo.felhasznalo_nev,felhasznalo.felhasznalo_kep_id,web_komment.wm_szoveg,DATE_FORMAT(web_komment.wm_datum, "%Y-%m-%d") AS wm_datum FROM `web_komment` inner JOIN felhasznalo on felhasznalo.felhasznalo_id=web_komment.wm_felhasznalo_id', function (err, rows, fields) {
+    if (err)
+      console.log(err)
+    else {
+      res.send(rows)
+    }
+  })
+  connection.end()
+})
+app.get('/felhasznalok', (req, res) => {
+  kapcsolat()
+
+  connection.query('SELECT * from felhasznalo', (err, rows, fields) => {
+    if (err) throw err
+
+
+    res.send(rows)
+  })
+  connection.end()
+})
+app.delete('/felhasznalotorles', (req, res) => {
+  kapcsolat()
+
+  connection.query('DELETE FROM felhasznalo WHERE felhasznalo_id = "' + req.body.bevitel5 + '"', (err, rows, fields) => {
+    if (err)
+      console.log(err)
+    else {
+      console.log(rows)
+      res.send(rows)
+    }
+  })
+  connection.end()
+
+})
+app.get('/osszesfelhasznalo', (req, res) => {
+  kapcsolat()
+
+  connection.query('SELECT listak_id,felhasznalo.felhasznalo_nev, listak_nev FROM `listak` INNER JOIN felhasznalo ON listak.listak_felhasznaloid = felhasznalo.felhasznalo_id', (err, rows, fields) => {
+    if (err) throw err
+
+
+    res.send(rows)
+  })
+  connection.end()
+})
+app.delete('/listatorles', (req, res) => {
+  kapcsolat()
+
+  connection.query('DELETE FROM `listak` WHERE listak_id  = "' + req.body.bevitel5 + '"', (err, rows, fields) => {
+    if (err)
+      console.log(err)
+    else {
+      console.log(rows)
+      res.send(rows)
+    }
+  })
+  connection.end()
+
+})
+app.post('/adminlogin', (req, res) => {
+  kapcsolat()
+
+  connection.query('SELECT * FROM `felhasznalo` WHERE `felhasznalo_nev` ="' + req.body.bevitel1 + '" ;', function (err, rows, fields) {
+    if (err)
+      console.log(err)
+    else {
+      if (rows.length > 0) {
+        if (rows[0].felhasznalo_jelszo == req.body.bevitel2) {
+          res.send(true)
         }
         else {
           res.send(false)
         }
+
       }
-  
-    })
-    connection.end()
-  })
-  app.post('/getid', (req, res) => {
-    kapcsolat()
-  
-    connection.query('SELECT felhasznalo_id FROM `felhasznalo` WHERE `felhasznalo_nev` ="' + req.body.bevitel1 + '" ;', function (err, rows, fields) {
-      if (err)
-        console.log(err)
       else {
-          let id=JSON.stringify(rows[0].felhasznalo_id)
-          console.log(id)
-          res.send(id)
-        }
-    })
-    connection.end()
+        res.send(false)
+      }
+    }
+
   })
-
-  app.post('/getprofilkep', (req, res) => {
-    kapcsolat()
-  
-    connection.query('SELECT felhasznalo_kep_id FROM `felhasznalo` WHERE `felhasznalo_id` ="' + req.body.bevitel1 + '" ;', function (err, rows, fields) {
-      if (err)
-        console.log(err)
-      else {
-        let fhkepid=JSON.stringify(rows[0].felhasznalo_kep_id)
-         res.send(fhkepid)
-        }
-    })
-    connection.end()
-  })
-  app.get('/getkomment', (req, res) => {
-    kapcsolat()
-  
-    connection.query('SELECT wm_nemertett_egyett,wm_jelentett,wm_egyetertett,id,Felhasznalo.felhasznalo_id,felhasznalo.felhasznalo_nev,felhasznalo.felhasznalo_kep_id,web_komment.wm_szoveg,web_komment.wm_datum FROM `web_komment` inner JOIN felhasznalo on felhasznalo.felhasznalo_id=web_komment.wm_felhasznalo_id;', function (err, rows, fields) {
-      if (err)
-        console.log(err)
-      else {
-       res.send(rows)
-        }
-    })
-    connection.end()
-  })
-  app.get('/felhasznalok', (req, res) => {
-    kapcsolat()
-
-    connection.query('SELECT * from felhasznalo', (err, rows, fields) => {
-        if (err) throw err
-
-
-        res.send(rows)
-    })
-    connection.end()
-})
-app.delete('/felhasznalotorles', (req, res) => {
-    kapcsolat()
-
-    connection.query('DELETE FROM felhasznalo WHERE felhasznalo_id = "' + req.body.bevitel5 + '"', (err, rows, fields) => {
-        if (err)
-            console.log(err)
-        else {
-            console.log(rows)
-            res.send(rows)
-        }
-    })
-    connection.end()
-
-})
-app.get('/osszesfelhasznalo', (req, res) => {
-    kapcsolat()
-
-    connection.query('SELECT listak_id,felhasznalo.felhasznalo_nev, listak_nev FROM `listak` INNER JOIN felhasznalo ON listak.listak_felhasznaloid = felhasznalo.felhasznalo_id', (err, rows, fields) => {
-        if (err) throw err
-
-
-        res.send(rows)
-    })
-    connection.end()
-})
-app.delete('/listatorles', (req, res) => {
-    kapcsolat()
-
-    connection.query('DELETE FROM `listak` WHERE listak_id  = "' + req.body.bevitel5 + '"', (err, rows, fields) => {
-        if (err)
-            console.log(err)
-        else {
-            console.log(rows)
-            res.send(rows)
-        }
-    })
-    connection.end()
-
-})
-app.post('/adminlogin', (req, res) => {
-    kapcsolat()
-
-    connection.query('SELECT * FROM `felhasznalo` WHERE `felhasznalo_nev` ="' + req.body.bevitel1 + '" ;', function (err, rows, fields) {
-        if (err)
-            console.log(err)
-        else {
-            if (rows.length > 0) {
-                if (rows[0].felhasznalo_jelszo == req.body.bevitel2) {
-                    res.send(true)
-                }
-                else {
-                    res.send(false)
-                }
-
-            }
-            else {
-                res.send(false)
-            }
-        }
-
-    })
-    connection.end()
+  connection.end()
 })
 app.post('/egyetert', (req, res) => {
   kapcsolat()
 
-  connection.query('UPDATE `web_komment` SET `wm_egyetertett`='+req.body.bevitel1+' WHERE `id`='+req.body.bevitel2+';', function (err, rows, fields) {
+  connection.query('UPDATE `web_komment` SET `wm_egyetertett`=' + req.body.bevitel1 + ' WHERE `id`=' + req.body.bevitel2 + ';', function (err, rows, fields) {
     if (err)
       console.log(err)
     else {
-     res.send(rows)
-      }
+      res.send(rows)
+    }
   })
   connection.end()
 })
 app.post('/nemegyetert', (req, res) => {
   kapcsolat()
 
-  connection.query('UPDATE `web_komment` SET `wm_nemertett_egyett`='+req.body.bevitel1+' WHERE `id`='+req.body.bevitel2+';', function (err, rows, fields) {
+  connection.query('UPDATE `web_komment` SET `wm_nemertett_egyett`=' + req.body.bevitel1 + ' WHERE `id`=' + req.body.bevitel2 + ';', function (err, rows, fields) {
     if (err)
       console.log(err)
     else {
-     res.send(rows)
-      }
+      res.send(rows)
+    }
   })
   connection.end()
 })
 app.post('/jelentes', (req, res) => {
   kapcsolat()
 
-  connection.query('UPDATE `web_komment` SET `wm_jelentett`='+req.body.bevitel1+' WHERE `id`='+req.body.bevitel2+';', function (err, rows, fields) {
+  connection.query('UPDATE `web_komment` SET `wm_jelentett`=' + req.body.bevitel1 + ' WHERE `id`=' + req.body.bevitel2 + ';', function (err, rows, fields) {
     if (err)
       console.log(err)
     else {
-     res.send(rows)
-      }
+      res.send(rows)
+    }
   })
   connection.end()
 })
@@ -197,12 +197,12 @@ app.post('/jelentes', (req, res) => {
 app.post('/kommentfel', (req, res) => {
   kapcsolat()
 
-  connection.query('INSERT INTO `web_komment` VALUES (NULL,"'+req.body.bevitel1+'",CURRENT_DATE(),'+req.body.bevitel2+',0,0,0);', function (err, rows, fields) {
+  connection.query('INSERT INTO `web_komment` VALUES (NULL,"' + req.body.bevitel1 + '",CURRENT_DATE(),' + req.body.bevitel2 + ',0,0,0);', function (err, rows, fields) {
     if (err)
       console.log(err)
     else {
-     res.send(rows)
-      }
+      res.send(rows)
+    }
   })
   connection.end()
 })
@@ -210,12 +210,12 @@ app.delete('/kommenttorlese', (req, res) => {
   kapcsolat()
 
   connection.query('DELETE FROM web_komment WHERE id = "' + req.body.bevitel1 + '"', (err, rows, fields) => {
-      if (err)
-          console.log(err)
-      else {
-          console.log(rows)
-          res.send(rows)
-      }
+    if (err)
+      console.log(err)
+    else {
+      console.log(rows)
+      res.send(rows)
+    }
   })
   connection.end()
 
@@ -223,10 +223,10 @@ app.delete('/kommenttorlese', (req, res) => {
 
 
 
-  
+
 
 
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
+  console.log(`Example app listening on port ${port}`)
 })
