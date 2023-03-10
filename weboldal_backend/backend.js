@@ -220,6 +220,96 @@ app.delete('/kommenttorlese', (req, res) => {
   connection.end()
 
 })
+app.get('/felhasznalokepek', (req, res) => {
+  kapcsolat()
+
+  connection.query('select * from kepek', (err, rows, fields) => {
+    if (err) throw err
+
+
+    res.send(rows)
+  })
+  connection.end()
+})
+app.post('/profkepfrissites', (req, res) => {
+  kapcsolat()
+
+  connection.query('UPDATE `felhasznalo` SET `felhasznalo_kep_id`=' + req.body.bevitel1 + ' WHERE `felhasznalo_id`=' + req.body.bevitel2 + ';', function (err, rows, fields) {
+    if (err)
+      console.log(err)
+    else {
+      console.log(rows)
+      res.send(rows)
+    }
+  })
+  connection.end()
+
+})
+app.get('/jelentettkomment', (req, res) => {
+  kapcsolat()
+
+  connection.query('SELECT felhasznalo.felhasznalo_nev,id,felhasznalo.felhasznalo_nev,wm_szoveg FROM web_komment INNER JOIN felhasznalo ON web_komment.wm_felhasznalo_id = felhasznalo.felhasznalo_id where wm_jelentett>0', (err, rows, fields) => {
+    if (err) throw err
+
+
+    res.send(rows)
+  })
+  connection.end()
+})
+app.post('/felhasznalonevek', (req, res) => {
+  kapcsolat()
+  let egyezes=0
+  connection.query('SELECT felhasznalo_nev FROM felhasznalo;', (err, rows, fields) => {
+    if (err) throw err
+    else{
+      rows.map((item)=>{
+        if(item.felhasznalo_nev==req.body.bevitel1)
+        {
+          egyezes+=1
+        }
+      })
+    }
+    if(egyezes>0)
+    {
+      res.send(false)
+    }
+    else{
+      res.send(true)
+     
+    }
+  })
+  connection.end()
+})
+
+  app.post('/felhasznalonevfrissites', (req, res) => {
+    kapcsolat()
+  
+    connection.query('UPDATE `felhasznalo` SET `felhasznalo_nev`="' +req.body.bevitel1 + '" WHERE `felhasznalo_id`=' + req.body.bevitel2 + ';', function (err, rows, fields) {
+      if (err)
+        console.log(err)
+      else {
+       
+        res.send(true)
+      }
+    })
+    connection.end()
+  
+  })
+  app.post('/regisztraciodatum', (req, res) => {
+    kapcsolat()
+  
+    connection.query("SELECT YEAR(`felhasznalo_regisztrdatum`)as'datum',MONTH(felhasznalo_regisztrdatum) as 'honap',DAY(felhasznalo_regisztrdatum) as 'nap'  FROM `felhasznalo` WHERE `felhasznalo_id`=" + req.body.bevitel1 + "", function (err, rows, fields) {
+      if (err)
+        console.log(err)
+      else {
+        console.log(rows)
+        res.send(rows)
+      }
+    })
+    connection.end()
+  
+  })
+
 
 
 
