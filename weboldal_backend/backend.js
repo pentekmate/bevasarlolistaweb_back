@@ -57,7 +57,6 @@ app.post('/getid', (req, res) => {
   })
   connection.end()
 })
-
 app.post('/getprofilkep', (req, res) => {
   kapcsolat()
 
@@ -193,7 +192,6 @@ app.post('/jelentes', (req, res) => {
   })
   connection.end()
 })
-
 app.post('/kommentfel', (req, res) => {
   kapcsolat()
 
@@ -280,41 +278,84 @@ app.post('/felhasznalonevek', (req, res) => {
   })
   connection.end()
 })
+app.post('/felhasznalonevfrissites', (req, res) => {
+  kapcsolat()
 
-  app.post('/felhasznalonevfrissites', (req, res) => {
-    kapcsolat()
-  
-    connection.query('UPDATE `felhasznalo` SET `felhasznalo_nev`="' +req.body.bevitel1 + '" WHERE `felhasznalo_id`=' + req.body.bevitel2 + ';', function (err, rows, fields) {
-      if (err)
-        console.log(err)
-      else {
-       
-        res.send(true)
-      }
-    })
-    connection.end()
-  
+  connection.query('UPDATE `felhasznalo` SET `felhasznalo_nev`="' +req.body.bevitel1 + '" WHERE `felhasznalo_id`=' + req.body.bevitel2 + ';', function (err, rows, fields) {
+    if (err)
+      console.log(err)
+    else {
+      
+      res.send(true)
+    }
   })
-  app.post('/regisztraciodatum', (req, res) => {
-    kapcsolat()
-  
-    connection.query("SELECT YEAR(`felhasznalo_regisztrdatum`)as'datum',MONTH(felhasznalo_regisztrdatum) as 'honap',DAY(felhasznalo_regisztrdatum) as 'nap'  FROM `felhasznalo` WHERE `felhasznalo_id`=" + req.body.bevitel1 + "", function (err, rows, fields) {
-      if (err)
-        console.log(err)
-      else {
-        console.log(rows)
-        res.send(rows)
-      }
-    })
-    connection.end()
-  
+  connection.end()
+
+})
+app.post('/regisztraciodatum', (req, res) => {
+  kapcsolat()
+
+  connection.query("SELECT YEAR(`felhasznalo_regisztrdatum`)as'datum',MONTH(felhasznalo_regisztrdatum) as 'honap',DAY(felhasznalo_regisztrdatum) as 'nap'  FROM `felhasznalo` WHERE `felhasznalo_id`=" + req.body.bevitel1 + "", function (err, rows, fields) {
+    if (err)
+      console.log(err)
+    else {
+      console.log(rows)
+      res.send(rows)
+    }
   })
+  connection.end()
 
+})
+app.post('/havikiadas', (req, res) => {
+  kapcsolat()
 
+  connection.query("SELECT MONTHNAME(listak_datum) AS honap, SUM(listak_ar) AS ar FROM listak WHERE listak_felhasznaloid ='" + req.body.bevitel1 + "' and listak_kesz=1 GROUP BY YEAR(listak_datum), MONTH(listak_datum);", function (err, rows, fields) {
+    if (err)
+      console.log(err)
+    else {
+      console.log(rows)
+      res.send(rows)
+    }
+  })
+  connection.end()
 
+})
+app.post('/atlagkoltes', (req, res) => {
+  kapcsolat()
 
+  connection.query('SELECT avg(listak_ar) as "atlag" FROM `listak` WHERE listak_felhasznaloid=' + req.body.bevitel1 + ' and listak_kesz=1;', (err, rows, fields) => {
+    if (err) throw err
 
+    console.log(rows)
+    res.send(rows)
+  })
+  connection.end()
+})
+app.post('/maxkoltes', (req, res) => {
+  kapcsolat()
 
+  connection.query('SELECT MAX(listak_ar) as "max" FROM `listak` WHERE listak_felhasznaloid="' + req.body.bevitel1 + '" and listak_kesz=1;', (err, rows, fields) => {
+    if (err) throw err
+
+    console.log(rows)
+    res.send(rows)
+  })
+  connection.end()
+})
+app.delete('/profiltorles', (req, res) => {
+  kapcsolat()
+
+  connection.query('DELETE FROM `felhasznalo` WHERE `felhasznalo_id` =' + req.body.bevitel1 + '', function (err, rows, fields) {
+    if (err)
+      console.log(err)
+    else {
+      console.log(rows)
+      res.send(rows)
+    }
+  })
+  connection.end()
+
+})
 
 
 app.listen(port, () => {
